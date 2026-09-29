@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
 import type { EmbeddingModel, LanguageModel } from 'ai'
 import { PrismaService } from '../prisma/prisma.service'
+import { EnvService } from '../config/env.service'
 
 /** 一个供应商的可调用模型工厂 */
 export interface ProviderBundle {
@@ -18,8 +19,8 @@ interface CacheEntry {
 /**
  * 供应商注册表：DB 的 model_providers 行 → AI SDK provider 实例（内存缓存 30s）
  * 统一用 createOpenAICompatible：DeepSeek 官方即 OpenAI 兼容协议 少一条分支少一类不确定
- * （规格原写 @ai-sdk/deepseek 优先 实测统一 openai-compatible 更稳 已在报告记录偏差）
- * 密钥从 env 动态读取（DB 存的是变量名 此处是 EnvService 之外的合理例外 注释备案）
+ * 密钥经 EnvService 读取 业务代码禁直接 process.env
+ * 新增供应商需在 EnvService 补对应 getter 并按名在此映射（EnvService 是共享文件 任务 0 持有）
  */
 @Injectable()
 export class ProviderRegistry {
@@ -32,7 +33,20 @@ export class ProviderRegistry {
 
   static readonly CACHE_TTL_MS = 30_000
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly env: EnvService,
+  ) {}
+
+  /**
+   * DB 存的是环境变量名 此处按名映射到 EnvService getter
+   * 未知变量名返回空 该供应商视为不可用（跳过并记日志）
+   */
+  private readApiKey(envName: string): string {
+    if (envName === 'DEEPSEEK_API_KEY') return this.env.DEEPSEEK_API_KEY
+    if (envName === 'SILICONFLOW_API_KEY') return this.env.SILICONFLOW_API_KEY
+    return ''
+  }
 
   /**
    * 取供应商的模型工厂
@@ -65,7 +79,7 @@ export class ProviderRegistry {
     const rows = await this.prisma.modelProvider.findMany({ where: { enabled: true } })
 
     this.cache = rows.map(row => {
-      const apiKey = process.env[row.apiKeyEnv] ?? ''
+      const apiKey = this.readApiKey(row.apiKeyEnv)
       if (!apiKey) {
         this.logger.warn(`provider ${row.name} 的 ${row.apiKeyEnv} 未配置 跳过`)
         return { row, bundle: null }
