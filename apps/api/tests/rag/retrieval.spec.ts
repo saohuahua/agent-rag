@@ -3,12 +3,16 @@ import { RetrievalService } from '../../src/rag/retrieval.service'
 import type { ChunkRepository } from '../../src/rag/chunk.repository'
 import type { GatewayService } from '../../src/gateway/gateway.service'
 
-/** 造仓库 mock 返回可定制的向量/词法行 */
+/**
+ * 造仓库 mock 返回可定制的向量/词法行
+ * 只实现检索两路方法 其余方法测试不涉及
+ * 保持 vi.fn 类型不提前断言 否则丢 mockResolvedValue 等方法
+ */
 function createRepo() {
   return {
     vectorSearch: vi.fn(),
     lexicalSearch: vi.fn(),
-  } as unknown as ChunkRepository
+  }
 }
 
 /** 词法行 fixture */
@@ -32,7 +36,8 @@ describe('RetrievalService 双路与降级', () => {
       embedMany: vi.fn(async () => [[0.1]]),
     } as unknown as GatewayService
 
-    const svc = new RetrievalService(gateway, repo)
+    // 部分 mock 仅实现两路检索 断言为完整仓库类型安全
+    const svc = new RetrievalService(gateway, repo as unknown as ChunkRepository)
     const hits = await svc.hybridSearch({ enterpriseId: 1, query: '退货', channel: 'auto' })
 
     // chunkId 11 两路都命中 分数最高排第一
@@ -51,7 +56,8 @@ describe('RetrievalService 双路与降级', () => {
       embedMany: vi.fn(async () => { throw new Error('ECONNREFUSED') }),
     } as unknown as GatewayService
 
-    const svc = new RetrievalService(gateway, repo)
+    // 部分 mock 仅实现两路检索 断言为完整仓库类型安全
+    const svc = new RetrievalService(gateway, repo as unknown as ChunkRepository)
     const hits = await svc.hybridSearch({ enterpriseId: 1, query: '退货', channel: 'auto' })
 
     expect(hits.length).toBe(2)
@@ -71,7 +77,8 @@ describe('RetrievalService 双路与降级', () => {
       embedMany: vi.fn(async () => [[0.1]]),
     } as unknown as GatewayService
 
-    const svc = new RetrievalService(gateway, repo)
+    // 部分 mock 仅实现两路检索 断言为完整仓库类型安全
+    const svc = new RetrievalService(gateway, repo as unknown as ChunkRepository)
     await svc.hybridSearch({ enterpriseId: 1, query: '退货', channel: 'auto' })
 
     expect(gateway.embedMany).not.toHaveBeenCalled()
@@ -88,7 +95,8 @@ describe('RetrievalService 双路与降级', () => {
       embedMany: vi.fn(async () => [[0.1]]),
     } as unknown as GatewayService
 
-    const svc = new RetrievalService(gateway, repo)
+    // 部分 mock 仅实现两路检索 断言为完整仓库类型安全
+    const svc = new RetrievalService(gateway, repo as unknown as ChunkRepository)
     const hits = await svc.hybridSearch({ enterpriseId: 1, query: '退货', channel: 'vector' })
 
     expect(repo.lexicalSearch).not.toHaveBeenCalled()
@@ -106,7 +114,8 @@ describe('RetrievalService 双路与降级', () => {
       embedMany: vi.fn(),
     } as unknown as GatewayService
 
-    const svc = new RetrievalService(gateway, repo)
+    // 部分 mock 仅实现两路检索 断言为完整仓库类型安全
+    const svc = new RetrievalService(gateway, repo as unknown as ChunkRepository)
     const hits = await svc.hybridSearch({ enterpriseId: 1, query: '退货', channel: 'auto', topK: 3 })
 
     expect(hits.length).toBe(3)
