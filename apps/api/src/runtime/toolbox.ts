@@ -31,12 +31,12 @@ export interface ToolboxContext {
   tenantCtx?: TenantCtx
   /** 事件回传 写 execution_events + 推 SSE */
   emit: EventSink
-  /** 内置 conversation.handover 的落地逻辑 */
+  /** 内置 handover 的落地逻辑 */
   handover: HandoverFn
 }
 
 /**
- * 工具箱：把技能台账包装成 AI SDK tool + 内置 conversation.handover
+ * 工具箱：把技能台账包装成 AI SDK tool + 内置 handover
  * 为什么每个技能都包装成 tool()：AI SDK 统一执行 execute 并把结果回喂 LLM
  * 三类异构能力（函数/HTTP RPA/外部 agent）在此收敛成一个入口 内部由 registry 分发
  * handover 是「多员工接管」的灵魂触发器 由 LLM 自主调用完成岗位轮转
@@ -67,7 +67,9 @@ export class ToolboxService {
     }
 
     // 内置 handover 工具 每个会话都有
-    tools['conversation.handover'] = this.buildHandoverTool(ctx)
+    // 为什么键名是 handover 而非 conversation.handover：OpenAI 兼容 API 的工具名只允许 ^[a-zA-Z0-9_-]+$
+    //   点号会被上游拒绝（实测 DeepSeek 400 Invalid tools.function.name）集成期改为合法名
+    tools['handover'] = this.buildHandoverTool(ctx)
 
     return tools
   }
@@ -111,7 +113,7 @@ export class ToolboxService {
     }
   }
 
-  /** 内置 conversation.handover 工具 LLM 自主转接岗位 */
+  /** 内置 handover 工具 LLM 自主转接岗位 */
   private buildHandoverTool(ctx: ToolboxContext) {
     return tool({
       description:

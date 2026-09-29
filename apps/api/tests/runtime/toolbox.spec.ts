@@ -46,7 +46,7 @@ describe('工具箱 技能包装 + 内置 handover', () => {
 
     expect(Object.keys(tools)).toContain('kb_search')
     expect(Object.keys(tools)).not.toContain('operate_ticket')
-    expect(Object.keys(tools)).toContain('conversation.handover')
+    expect(Object.keys(tools)).toContain('handover')
   })
 
   it('技能执行发 SKILL_START/SKILL_END 并带绑定参数调用 registry', async () => {
@@ -104,7 +104,7 @@ describe('工具箱 技能包装 + 内置 handover', () => {
     const handover = vi.fn().mockResolvedValue({ ok: true, newHolderId: 9 })
 
     const tools = toolbox.build({ ...ctx, skillConfigs: new Map(), handover })
-    const ht = tools['conversation.handover'] as unknown as {
+    const ht = tools['handover'] as unknown as {
       execute: (input: { targetEmployeeKey: string; reason: string }) => Promise<unknown>
     }
 

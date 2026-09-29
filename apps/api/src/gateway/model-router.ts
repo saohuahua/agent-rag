@@ -121,6 +121,8 @@ export class ModelRouter {
           messages: opts.messages,
           temperature: opts.temperature,
           maxRetries: 0,
+          // AI SDK v7 默认禁止 messages 带 system 角色 调用方（ticket_classify/external_agent）会传 需放开
+          allowSystemInMessages: true,
         })
 
         const inputTokens = result.usage.inputTokens ?? 0
@@ -266,6 +268,8 @@ export class ModelRouter {
       messages: opts.messages,
       temperature: opts.temperature,
       maxRetries: 0,
+      // AI SDK v7 默认禁止 messages 带 system 角色 调用方可能传 需放开
+      allowSystemInMessages: true,
     })
 
     // 立即读首分片 触发真实网络请求 让 401/网络错在返回前暴露 供降级循环换下一跳

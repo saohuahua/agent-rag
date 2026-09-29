@@ -9,6 +9,11 @@
     "test": "vitest run",
     "db:migrate": "node --env-file=../../.env prisma/migrate-local.mjs",
     "db:seed": "node --env-file=../../.env --import tsx prisma/seed.ts",
+    "demo:scenario": "node --env-file=../../.env --import tsx src/demo/scenario.ts",
+    "demo:degradation": "node --env-file=../../.env --import tsx src/demo/degradation.ts",
+    "demo:concurrency": "node --env-file=../../.env --import tsx src/demo/concurrency.ts",
+    "demo:isolation": "node --env-file=../../.env --import tsx src/demo/isolation.ts",
+    "eval:rag": "node --env-file=../../.env --import tsx src/demo/eval-rag.ts",
     "prisma:generate": "prisma generate"
   },
   "dependencies": {

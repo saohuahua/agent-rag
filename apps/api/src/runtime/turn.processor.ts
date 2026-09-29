@@ -176,7 +176,9 @@ export class TurnProcessor extends WorkerHost {
         { role: 'user', content: userMessage },
       ]
 
-      const result = streamText({ model, messages, tools, maxRetries: 0 })
+      // allowSystemInMessages：AI SDK v7 默认禁止 messages 里带 system 角色 需显式放开
+      // 本项目 system prompt 在 messages 里组装（见上下文三段） 与网关一致 集成期最小兼容修复
+      const result = streamText({ model, messages, tools, maxRetries: 0, allowSystemInMessages: true })
 
       let assistantText = ''
       for await (const delta of result.textStream) {

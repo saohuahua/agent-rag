@@ -125,7 +125,9 @@ export class ReadonlySqlExecutor {
     const { sql, tableNames } = validateReadonlySql(input.sql)
     const finalSql = ensureLimit(sql)
 
-    const rows = await this.execReadonly(finalSql)
+    // 查询结果先转 JSON 安全类型：Postgres COUNT/SUM 返回 int8(BigInt) timestamp 返回 Date
+    // 不转的话工具结果回喂 LLM 时 JSON.stringify 会抛 Do not know how to serialize a BigInt
+    const rows = (await this.execReadonly(finalSql)).map(sanitizeRow)
 
     return {
       output: {
@@ -149,4 +151,33 @@ export class ReadonlySqlExecutor {
       return tx.$queryRawUnsafe<Record<string, unknown>[]>(sql)
     })
   }
+}
+
+/**
+ * 把 $queryRawUnsafe 的结果行转成 JSON 可序列化类型
+ * BigInt（int8 如 COUNT/SUM 结果）→ Number 超出 Number 安全范围才退回字符串
+ * Date（timestamp）→ ISO 字符串 递归处理嵌套对象与数组
+ * 为什么必须转：工具结果要回喂 LLM AI SDK 会 JSON.stringify BigInt 无法序列化会抛错
+ * @param value 查询结果的任意值
+ * @returns JSON 安全的等价值
+ */
+function sanitizeRow(value: unknown): unknown {
+  if (typeof value === 'bigint') {
+    const n = Number(value)
+    return Number.isSafeInteger(n) ? n : value.toString()
+  }
+  if (value instanceof Date) {
+    return value.toISOString()
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeRow)
+  }
+  if (value !== null && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = sanitizeRow(v)
+    }
+    return out
+  }
+  return value
 }
