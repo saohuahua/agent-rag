@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "typecheck": "echo \"E 任务填充 web 源码后启用\""
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@agent-rag/shared": "workspace:*",
