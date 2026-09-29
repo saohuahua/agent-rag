@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+# 允许这些依赖执行安装脚本（prisma 引擎下载 esbuild 二进制链接等 均为知名包）
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  msgpackr-extract: true
+  prisma: true

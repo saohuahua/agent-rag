@@ -1,0 +1,524 @@
+// 数据库唯一真相源 行为语义见 docs/00-总览/03
+// 生成客户端到 src/generated/prisma（gitignore 可再生）
+// 软引用关系说明：TemplateSkillBinding.skillKey / TemplateKbBinding.datasetId /
+//   PackageItem.templateSlug+version 均为软引用（无外键）保证不可变版本语义
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============ 平台级：模型网关 ============
+
+/// LLM/embedding 供应商注册表 密钥只存环境变量名不存明文
+model ModelProvider {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  kind      ProviderKind
+  baseUrl   String
+  apiKeyEnv String
+  enabled   Boolean       @default(true)
+  routes    ModelRoute[]
+  createdAt DateTime      @default(now())
+
+  @@map("model_providers")
+}
+
+/// 同一 alias 允许多行 按 priority 升序组成降级链
+model ModelRoute {
+  id              Int           @id @default(autoincrement())
+  alias           String
+  providerId      Int
+  provider        ModelProvider @relation(fields: [providerId], references: [id])
+  upstreamModel   String
+  priority        Int           @default(100)
+  priceInPerMTok  Decimal       @default(0) @db.Decimal(10, 4)
+  priceOutPerMTok Decimal       @default(0) @db.Decimal(10, 4)
+  maxTokens       Int?
+  enabled         Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+
+  @@index([alias, priority])
+  @@map("model_routes")
+}
+
+// ============ 平台级：技能注册台账 ============
+
+/// 三类异构能力的上架台账 代码侧真相在 src/skills/（zod schema+执行器）
+model Skill {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  name        String
+  type        SkillType
+  description String
+  configJson  Json?
+  riskLevel   Int      @default(1)
+  enabled     Boolean  @default(true)
+
+  @@map("skills")
+}
+
+// ============ 岗位模板（平台级，版本不可变）============
+
+/// 员工模板 PUBLISHED 后不可改 新行为出新版本行
+model EmployeeTemplate {
+  id           Int              @id @default(autoincrement())
+  slug         String
+  version      Int
+  name         String
+  description  String
+  systemPrompt String
+  avatar       String?
+  status       TemplateStatus
+  reviewNote   String?
+  createdBy    Int
+  publishedAt  DateTime?
+  createdAt    DateTime         @default(now())
+
+  skillBindings TemplateSkillBinding[]
+  kbBindings    TemplateKbBinding[]
+
+  @@unique([slug, version])
+  @@index([slug, status])
+  @@map("employee_templates")
+}
+
+/// 模板↔技能绑定（含该技能的参数注入 如 datasetId）
+model TemplateSkillBinding {
+  id         Int              @id @default(autoincrement())
+  templateId Int
+  template   EmployeeTemplate @relation(fields: [templateId], references: [id])
+  skillKey   String
+  configJson Json?
+  order      Int              @default(0)
+
+  @@index([templateId])
+  @@map("template_skill_bindings")
+}
+
+/// 模板↔知识库绑定 检索内容进上下文的方式
+model TemplateKbBinding {
+  id         Int              @id @default(autoincrement())
+  templateId Int
+  template   EmployeeTemplate @relation(fields: [templateId], references: [id])
+  datasetId  Int
+  kbMode     KbMode
+
+  @@unique([templateId, datasetId])
+  @@map("template_kb_bindings")
+}
+
+// ============ 知识库（RAG）============
+
+/// 文档分组 绑定与隔离的锚点
+model KnowledgeDataset {
+  id           Int       @id @default(autoincrement())
+  enterpriseId Int
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id])
+  name         String
+  description  String?
+  docs         KnowledgeDoc[]
+  createdAt    DateTime  @default(now())
+
+  @@index([enterpriseId])
+  @@map("knowledge_datasets")
+}
+
+/// 上传的原始文档 解析入库状态机在这上面流转
+model KnowledgeDoc {
+  id           Int       @id @default(autoincrement())
+  datasetId    Int
+  dataset      KnowledgeDataset @relation(fields: [datasetId], references: [id])
+  enterpriseId Int
+  title        String
+  sourceType   DocSourceType
+  storageKey   String
+  mimeType     String
+  sizeBytes    Int
+  checksum     String
+  status       DocStatus
+  parseError   String?
+  chunkCount   Int       @default(0)
+  uploadedBy   Int
+  createdAt    DateTime  @default(now())
+
+  chunks       KnowledgeChunk[]
+
+  @@unique([datasetId, checksum])
+  @@index([enterpriseId])
+  @@map("knowledge_docs")
+}
+
+/// 检索的最小单元 向量与词法双索引列只经 raw SQL 读写
+model KnowledgeChunk {
+  id          Int          @id @default(autoincrement())
+  docId       Int
+  doc         KnowledgeDoc @relation(fields: [docId], references: [id], onDelete: Cascade)
+  seq         Int
+  content     String
+  page        Int?
+  headingPath String?
+  tokenCount  Int          @default(0)
+  embedding   Unsupported("vector")?
+  tsv         Unsupported("tsvector")?
+
+  @@unique([docId, seq])
+  @@map("knowledge_chunks")
+}
+
+// ============ 订阅包体系 ============
+
+/// 包=岗位组合的商品壳 版本行不可变
+model SubscriptionPackage {
+  id          Int             @id @default(autoincrement())
+  slug        String          @unique
+  name        String
+  description String
+  versions    PackageVersion[]
+  subscriptions Subscription[]
+  createdAt   DateTime        @default(now())
+
+  @@map("subscription_packages")
+}
+
+model PackageVersion {
+  id          Int             @id @default(autoincrement())
+  packageId   Int
+  package     SubscriptionPackage @relation(fields: [packageId], references: [id])
+  version     Int
+  status      TemplateStatus
+  publishedAt DateTime?
+  items       PackageItem[]
+
+  @@unique([packageId, version])
+  @@map("package_versions")
+}
+
+/// 包内模板清单（slug+version 精确锁定 软引用）
+model PackageItem {
+  id               Int            @id @default(autoincrement())
+  packageVersionId Int
+  packageVersion   PackageVersion @relation(fields: [packageVersionId], references: [id])
+  templateSlug     String
+  templateVersion  Int
+
+  @@index([packageVersionId])
+  @@map("package_items")
+}
+
+// ============ 企业与员工体系 ============
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime  @default(now())
+  members      Member[]
+
+  @@map("users")
+}
+
+/// 企业=租户根
+model Enterprise {
+  id               Int                @id @default(autoincrement())
+  name             String
+  slug             String             @unique
+  monthlyBudgetCny Decimal            @default(500) @db.Decimal(10, 2)
+  status           String             @default("ACTIVE")
+  createdAt        DateTime           @default(now())
+  departments      Department[]
+  members          Member[]
+  subscriptions    Subscription[]
+  employees        SiliconEmployee[]
+  datasets         KnowledgeDataset[]
+  grants           EmployeeGrant[]
+  sessions         ConversationSession[]
+
+  @@map("enterprises")
+}
+
+/// 部门树 物化路径 path='/1/3/7/'（含自身 子树查询 LIKE '/1/3/7/%'）
+model Department {
+  id           Int          @id @default(autoincrement())
+  enterpriseId Int
+  enterprise   Enterprise   @relation(fields: [enterpriseId], references: [id])
+  parentId     Int?
+  parent       Department?  @relation("DeptTree", fields: [parentId], references: [id])
+  children     Department[] @relation("DeptTree")
+  name         String
+  path         String
+  sortOrder    Int          @default(0)
+  members      Member[]
+
+  @@unique([enterpriseId, path])
+  @@map("departments")
+}
+
+/// 人在企业中的身份（User 可属多企业）
+model Member {
+  id           Int         @id @default(autoincrement())
+  enterpriseId Int
+  enterprise   Enterprise  @relation(fields: [enterpriseId], references: [id])
+  userId       Int
+  user         User        @relation(fields: [userId], references: [id])
+  role         MemberRole
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  status       String      @default("ACTIVE")
+  createdAt    DateTime    @default(now())
+
+  @@unique([enterpriseId, userId])
+  @@map("members")
+}
+
+/// 邀请链接（token 一次性）
+model Invitation {
+  id           Int        @id @default(autoincrement())
+  enterpriseId Int
+  email        String
+  role         MemberRole @default(MEMBER)
+  departmentId Int?
+  token        String     @unique
+  status       String     @default("PENDING")
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+
+  @@index([enterpriseId])
+  @@map("invitations")
+}
+
+/// 订阅 锁定包版本是核心语义
+model Subscription {
+  id                   Int                @id @default(autoincrement())
+  enterpriseId         Int
+  enterprise           Enterprise         @relation(fields: [enterpriseId], references: [id])
+  packageId            Int
+  package              SubscriptionPackage @relation(fields: [packageId], references: [id])
+  lockedPackageVersion Int
+  status               String             @default("ACTIVE")
+  startedAt            DateTime           @default(now())
+  expiresAt            DateTime?
+  employees            SiliconEmployee[]
+
+  @@unique([enterpriseId, packageId])
+  @@map("subscriptions")
+}
+
+/// 数字员工实例 模板版本快照（升级=显式换）
+model SiliconEmployee {
+  id              Int            @id @default(autoincrement())
+  enterpriseId    Int
+  enterprise      Enterprise     @relation(fields: [enterpriseId], references: [id])
+  subscriptionId  Int
+  subscription    Subscription   @relation(fields: [subscriptionId], references: [id])
+  templateSlug    String
+  templateVersion Int
+  displayName     String
+  avatar          String?
+  configJson      Json?
+  status          String         @default("ACTIVE")
+  createdAt       DateTime       @default(now())
+  grants          EmployeeGrant[]
+  participants    SessionParticipant[]
+
+  @@index([enterpriseId])
+  @@map("silicon_employees")
+}
+
+/// 授权 解析时按 企业→部门子树→成员 三层收窄
+model EmployeeGrant {
+  id           Int             @id @default(autoincrement())
+  enterpriseId Int
+  enterprise   Enterprise      @relation(fields: [enterpriseId], references: [id])
+  employeeId   Int
+  employee     SiliconEmployee @relation(fields: [employeeId], references: [id])
+  scopeType    GrantScopeType
+  scopeId      Int?
+  status       String          @default("ACTIVE")
+  grantedBy    Int
+  createdAt    DateTime        @default(now())
+
+  @@index([employeeId])
+  @@map("employee_grants")
+}
+
+// ============ 会话与运行时 ============
+
+/// 会话 currentParticipant+epoch 是并发接管的 DB 真相
+model ConversationSession {
+  id                   Int                  @id @default(autoincrement())
+  enterpriseId         Int
+  enterprise           Enterprise           @relation(fields: [enterpriseId], references: [id])
+  participants         SessionParticipant[]
+  currentParticipantId Int?
+  epoch                Int                  @default(0)
+  title                String?
+  status               String               @default("ACTIVE")
+  lastMessageAt        DateTime?
+  createdAt            DateTime             @default(now())
+
+  messages             ConversationMessage[]
+  events               ExecutionEvent[]
+
+  @@index([enterpriseId])
+  @@map("conversation_sessions")
+}
+
+/// 会话阵容 slot 决定接管顺序
+model SessionParticipant {
+  id         Int                @id @default(autoincrement())
+  sessionId  Int
+  session    ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  employeeId Int
+  employee   SiliconEmployee    @relation(fields: [employeeId], references: [id])
+  slot       Int
+
+  @@unique([sessionId, employeeId])
+  @@index([sessionId])
+  @@map("session_participants")
+}
+
+/// 消息 parts 存 AI SDK UIMessage 的 parts 数组 text 冗余全文
+model ConversationMessage {
+  id         Int                @id @default(autoincrement())
+  sessionId  Int
+  session    ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role       MessageRole
+  employeeId Int?
+  epoch      Int
+  partsJson  Json
+  text       String
+  createdAt  DateTime           @default(now())
+
+  @@index([sessionId])
+  @@map("conversation_messages")
+}
+
+/// 执行状态事件流 type 用 String 允许扩展 标准值见 20-规格/03
+model ExecutionEvent {
+  id          Int                @id @default(autoincrement())
+  sessionId   Int
+  session     ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  messageId   Int?
+  employeeId  Int?
+  type        String
+  payloadJson Json?
+  createdAt   DateTime           @default(now())
+
+  @@index([sessionId, id])
+  @@map("execution_events")
+}
+
+// ============ 横切：账本与审计 ============
+
+/// 算力统一计量账本 一切成本数字的唯一来源
+model UsageRecord {
+  id           Int       @id @default(autoincrement())
+  enterpriseId Int?
+  sessionId    Int?
+  kind        UsageKind
+  routeAlias  String
+  providerName String
+  model       String
+  inputTokens Int       @default(0)
+  outputTokens Int      @default(0)
+  costCny     Decimal   @default(0) @db.Decimal(10, 6)
+  latencyMs   Int       @default(0)
+  success     Boolean   @default(true)
+  errorCode   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([enterpriseId, createdAt])
+  @@index([createdAt])
+  @@map("usage_records")
+}
+
+/// 审计日志 模板/包发布、订阅、升级、授权等关键动作
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  enterpriseId  Int?
+  actorMemberId Int?
+  action        String
+  targetType    String
+  targetId      Int
+  beforeJson    Json?
+  afterJson     Json?
+  reason        String?
+  createdAt     DateTime @default(now())
+
+  @@index([enterpriseId, createdAt])
+  @@map("audit_logs")
+}
+
+// ============ 枚举 ============
+
+enum ProviderKind {
+  LLM
+  EMBEDDING
+}
+
+enum SkillType {
+  BUILTIN_FUNCTION
+  HTTP_RPA
+  EXTERNAL_AGENT
+}
+
+enum TemplateStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  ARCHIVED
+  REJECTED
+}
+
+enum KbMode {
+  INJECT
+  TOOL
+  BOTH
+}
+
+enum DocSourceType {
+  UPLOAD
+  CRAWL
+  MANUAL
+}
+
+enum DocStatus {
+  UPLOADED
+  QUEUED
+  PARSING
+  INDEXED
+  FAILED
+  OCR_NEEDED
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum GrantScopeType {
+  ENTERPRISE
+  DEPARTMENT
+  MEMBER
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum UsageKind {
+  LLM
+  EMBEDDING
+  RPA
+  EXTERNAL_AGENT
+}

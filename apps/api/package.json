@@ -1,0 +1,43 @@
+{
+  "name": "@agent-rag/api",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.prisma.json",
+    "test": "vitest run",
+    "db:migrate": "node --env-file=../../.env prisma/migrate-local.mjs",
+    "db:seed": "node --env-file=../../.env --import tsx prisma/seed.ts",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@agent-rag/shared": "workspace:*",
+    "@ai-sdk/deepseek": "^3.0.0",
+    "@ai-sdk/openai-compatible": "^3.0.0",
+    "@nestjs/bullmq": "^12.0.0",
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "@nestjs/platform-express": "^12.0.0",
+    "@node-rs/jieba": "^2.0.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "ai": "^7.0.0",
+    "bullmq": "^6.0.0",
+    "ioredis": "^6.0.0",
+    "mammoth": "^1.9.0",
+    "pdf-parse": "^2.0.0",
+    "pg": "^8.16.0",
+    "zod": "^4.6.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/testing": "^12.0.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "prisma": "^7.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

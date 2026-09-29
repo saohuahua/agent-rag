@@ -1,0 +1,27 @@
+{
+  "name": "agent-rag",
+  "private": true,
+  "version": "0.1.0",
+  "description": "硅基员工平台：企业 AI 中台（电商数字员工）——NestJS + Next.js + Vercel AI SDK + pgvector",
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck",
+    "db:up": "node scripts/infra-up.mjs",
+    "db:down": "node scripts/infra-down.mjs",
+    "db:migrate": "pnpm --filter @agent-rag/api db:migrate",
+    "db:seed": "pnpm --filter @agent-rag/api db:seed",
+    "eval:rag": "pnpm --filter @agent-rag/api eval:rag",
+    "demo:scenario": "pnpm --filter @agent-rag/api demo:scenario"
+  },
+  "packageManager": "pnpm@11.23.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-pgvector": "^0.0.9",
+    "@electric-sql/pglite-socket": "^0.2.11"
+  }
+}

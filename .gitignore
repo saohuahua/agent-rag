@@ -1,0 +1,29 @@
+# 依赖
+node_modules/
+
+# 环境
+.env
+.env.local
+
+# 构建产物
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# Prisma 生成代码（prisma generate 可再生）
+src/generated/prisma/
+
+# 运行时数据
+storage/
+data/
+*.db
+
+# 日志与杂项
+logs/
+*.log
+.DS_Store
+Thumbs.db
+coverage/
+.idea/
+.vscode/
