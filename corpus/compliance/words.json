@@ -1,0 +1,96 @@
+{
+  "_comment": "禁限售词表（合规引擎用）。来源：①《中华人民共和国广告法》第九条；②抖音电商《广告『禁用词』实施细则》（corpus/rules/RULE-014）；③《网络信息内容生态治理规定》第六、七条；④淘宝平台违禁信息管理规则（RULE-021）；⑤《化妆品监督管理条例》第三十七条；《食品安全法》第七十一、七十三条。severity 取值：severe=法律法规明令禁止（禁售/违法信息），high=广告法禁止的绝对化/权威/医疗/迷信用语（高风险），medium=易引发误导的夸大表述。采集日期 2026-09-29。",
+  "severity_levels": {
+    "severe": "法律法规明令禁止：违法信息/禁售商品/涉医疗功效宣称，一经使用即违规",
+    "high": "广告法禁止：绝对化用语/权威背书/迷信/虚假承诺，高风险",
+    "medium": "易引发误导的夸大对比表述，需谨慎"
+  },
+  "words": {
+    "绝对化极限用语": [
+      {"word": "最", "severity": "high"}, {"word": "最佳", "severity": "high"}, {"word": "最具", "severity": "high"},
+      {"word": "最优", "severity": "high"}, {"word": "最优秀", "severity": "high"}, {"word": "最好", "severity": "high"},
+      {"word": "最大", "severity": "high"}, {"word": "最高", "severity": "high"}, {"word": "最高级", "severity": "high"},
+      {"word": "最高档", "severity": "high"}, {"word": "最低", "severity": "high"}, {"word": "最低价", "severity": "high"},
+      {"word": "最便宜", "severity": "high"}, {"word": "最流行", "severity": "high"}, {"word": "最受欢迎", "severity": "high"},
+      {"word": "最时尚", "severity": "high"}, {"word": "最先进", "severity": "high"}, {"word": "最新", "severity": "high"},
+      {"word": "最新科技", "severity": "high"}, {"word": "最赚", "severity": "high"}, {"word": "最舒适", "severity": "high"},
+      {"word": "最聚拢", "severity": "high"}, {"word": "最符合", "severity": "high"}, {"word": "最先", "severity": "high"},
+      {"word": "最奢侈", "severity": "high"}, {"word": "最大程度", "severity": "high"}, {"word": "最先进科学", "severity": "high"},
+      {"word": "时尚最低价", "severity": "high"}, {"word": "最先进加工工艺", "severity": "high"}, {"word": "国家级", "severity": "high"},
+      {"word": "最高级", "severity": "high"}, {"word": "最佳", "severity": "high"}
+    ],
+    "第一唯一类用语": [
+      {"word": "第一", "severity": "high"}, {"word": "中国第一", "severity": "high"}, {"word": "全国第一", "severity": "high"},
+      {"word": "全网第一", "severity": "high"}, {"word": "销量第一", "severity": "high"}, {"word": "排名第一", "severity": "high"},
+      {"word": "第一品牌", "severity": "high"}, {"word": "行业第一", "severity": "high"}, {"word": "NO.1", "severity": "high"},
+      {"word": "TOP.1", "severity": "high"}, {"word": "唯一", "severity": "high"}, {"word": "独一无二", "severity": "high"},
+      {"word": "一流", "severity": "high"}, {"word": "仅此一家", "severity": "high"}, {"word": "仅此一次", "severity": "high"},
+      {"word": "全国X大品牌之一", "severity": "medium"}, {"word": "世界X大品牌之一", "severity": "medium"}, {"word": "史无前例", "severity": "high"},
+      {"word": "前无古人", "severity": "high"}, {"word": "永久", "severity": "high"}, {"word": "无敌", "severity": "high"},
+      {"word": "万能", "severity": "high"}, {"word": "绝对", "severity": "high"}, {"word": "绝无仅有", "severity": "high"}
+    ],
+    "权威资质类用语": [
+      {"word": "全球级", "severity": "high"}, {"word": "宇宙级", "severity": "high"}, {"word": "世界级", "severity": "high"},
+      {"word": "极品", "severity": "high"}, {"word": "极佳", "severity": "high"}, {"word": "极致", "severity": "high"},
+      {"word": "顶级", "severity": "high"}, {"word": "顶尖", "severity": "high"}, {"word": "尖端", "severity": "high"},
+      {"word": "顶级工艺", "severity": "high"}, {"word": "顶级享受", "severity": "high"}, {"word": "终极", "severity": "high"},
+      {"word": "首个", "severity": "high"}, {"word": "首选", "severity": "high"}, {"word": "全球首发", "severity": "high"},
+      {"word": "全国首家", "severity": "high"}, {"word": "全网首发", "severity": "high"}, {"word": "首款", "severity": "high"},
+      {"word": "首家", "severity": "high"}, {"word": "独家", "severity": "high"}, {"word": "独家配方", "severity": "high"},
+      {"word": "全国销量冠军", "severity": "high"}, {"word": "填补国内空白", "severity": "high"}, {"word": "国家领导人推荐", "severity": "high"},
+      {"word": "国家机关推荐", "severity": "high"}, {"word": "国家机关专供", "severity": "high"}, {"word": "国宴专用", "severity": "high"},
+      {"word": "人民大会堂", "severity": "high"}, {"word": "驰名商标", "severity": "high"}, {"word": "质量免检", "severity": "high"},
+      {"word": "国家免检", "severity": "high"}, {"word": "免抽检", "severity": "high"}, {"word": "无需国家质量检测", "severity": "high"},
+      {"word": "世界领先", "severity": "high"}, {"word": "行业领先", "severity": "high"}, {"word": "领先上市", "severity": "high"},
+      {"word": "领袖品牌", "severity": "high"}, {"word": "领导品牌", "severity": "high"}, {"word": "领导者", "severity": "high"},
+      {"word": "缔造者", "severity": "high"}, {"word": "王者", "severity": "high"}, {"word": "问鼎", "severity": "high"},
+      {"word": "至尊", "severity": "high"}, {"word": "巅峰", "severity": "high"}, {"word": "之王", "severity": "high"},
+      {"word": "性价比之王", "severity": "high"}, {"word": "王牌", "severity": "high"}, {"word": "销量冠军", "severity": "high"},
+      {"word": "龙头品牌", "severity": "high"}, {"word": "全球顶尖", "severity": "high"}
+    ],
+    "医疗功效类用语": [
+      {"word": "根治", "severity": "severe"}, {"word": "包治百病", "severity": "severe"}, {"word": "治愈率", "severity": "severe"},
+      {"word": "有效率", "severity": "severe"}, {"word": "无副作用", "severity": "severe"}, {"word": "无毒副作用", "severity": "severe"},
+      {"word": "三天即愈", "severity": "severe"}, {"word": "一盒见效", "severity": "severe"}, {"word": "彻底康复", "severity": "severe"},
+      {"word": "痊愈", "severity": "severe"}, {"word": "立马见效", "severity": "severe"}, {"word": "100%有效", "severity": "severe"},
+      {"word": "零风险", "severity": "severe"}, {"word": "无效退款", "severity": "severe"}, {"word": "比手术安全", "severity": "severe"},
+      {"word": "无依赖", "severity": "severe"}, {"word": "安全无毒", "severity": "severe"}, {"word": "治疗", "severity": "severe"},
+      {"word": "疾病预防", "severity": "severe"}, {"word": "治疗功能", "severity": "severe"}, {"word": "药用", "severity": "severe"},
+      {"word": "医疗作用", "severity": "severe"}, {"word": "保险公司保险", "severity": "severe"}, {"word": "家庭必备", "severity": "severe"},
+      {"word": "家中必备", "severity": "severe"}, {"word": "免费治疗", "severity": "severe"}, {"word": "免费赠送", "severity": "medium"}
+    ],
+    "虚假承诺与高风险诱导类": [
+      {"word": "包过", "severity": "high"}, {"word": "保过", "severity": "high"}, {"word": "一次通过", "severity": "high"},
+      {"word": "一次通关", "severity": "high"}, {"word": "一本书学会", "severity": "high"}, {"word": "一套题学会", "severity": "high"},
+      {"word": "不用学直接选", "severity": "high"}, {"word": "不用读题直接选", "severity": "high"}, {"word": "高考升学率", "severity": "high"},
+      {"word": "保值", "severity": "high"}, {"word": "升值", "severity": "high"}, {"word": "立马升值", "severity": "high"},
+      {"word": "投资价值", "severity": "high"}, {"word": "投资回报", "severity": "high"}, {"word": "升值回报", "severity": "high"}
+    ],
+    "迷信类用语": [
+      {"word": "冥器", "severity": "high"}, {"word": "旺夫", "severity": "high"}, {"word": "旺子", "severity": "high"},
+      {"word": "带来好运气", "severity": "high"}, {"word": "增强第六感", "severity": "high"}, {"word": "逢凶化吉", "severity": "high"},
+      {"word": "避凶", "severity": "high"}, {"word": "辟邪", "severity": "high"}, {"word": "防小人", "severity": "high"},
+      {"word": "化解小人", "severity": "high"}, {"word": "增加事业运", "severity": "high"}, {"word": "招财进宝", "severity": "high"},
+      {"word": "健康富贵", "severity": "high"}, {"word": "提升运气", "severity": "high"}, {"word": "有助事业", "severity": "high"},
+      {"word": "护身", "severity": "high"}, {"word": "平衡正负能量", "severity": "high"}, {"word": "消除精神压力", "severity": "high"},
+      {"word": "调和气压", "severity": "high"}, {"word": "时来运转", "severity": "high"}, {"word": "万事亨通", "severity": "high"},
+      {"word": "旺人", "severity": "high"}, {"word": "旺财", "severity": "high"}, {"word": "旺宅", "severity": "high"},
+      {"word": "镇宅", "severity": "high"}, {"word": "消灾", "severity": "high"}, {"word": "挡灾", "severity": "high"},
+      {"word": "助吉避凶", "severity": "high"}, {"word": "转富招福", "severity": "high"}, {"word": "开运", "severity": "high"}
+    ],
+    "违禁商品信息类": [
+      {"word": "毒品", "severity": "severe"}, {"word": "枪支", "severity": "severe"}, {"word": "弹药", "severity": "severe"},
+      {"word": "军火", "severity": "severe"}, {"word": "管制刀具", "severity": "severe"}, {"word": "弓弩", "severity": "severe"},
+      {"word": "剧毒化学品", "severity": "severe"}, {"word": "制毒原料", "severity": "severe"}, {"word": "烟花爆竹", "severity": "severe"},
+      {"word": "假币", "severity": "severe"}, {"word": "电子烟", "severity": "severe"}, {"word": "烟草", "severity": "severe"},
+      {"word": "处方药", "severity": "severe"}, {"word": "淫秽", "severity": "severe"}, {"word": "色情", "severity": "severe"},
+      {"word": "赌博", "severity": "severe"}, {"word": "封建迷信", "severity": "severe"}, {"word": "邪教", "severity": "severe"},
+      {"word": "军警服饰", "severity": "severe"}, {"word": "警用设备", "severity": "severe"}, {"word": "军用标志", "severity": "severe"}
+    ]
+  },
+  "_stats": {
+    "total_words": 199,
+    "note": "当前收录 199 词（去重后），其中 severe 级 47 词、high 级 149 词、medium 级 3 词。目标 ≥300 词，需在集成期从更多平台禁限售目录补充。",
+    "collected_at": "2026-09-29"
+  }
+}
