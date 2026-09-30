@@ -25,7 +25,7 @@
 - 测试：**60/60**（5 个文件）全绿；全仓 `vitest run` **171/171**（27 文件）通过，本任务未破坏任何既有测试
 - 类型检查：`tsc --noEmit`（src 范围）**0 错误**（见 §6 已知跨任务问题）
 - 文件：7 defs + 6 执行器 + registry + errors + module，共 1249 行
-- 词表：读取 `corpus/compliance/words.json` 199 词（severe 47 / high 149 / medium 3，F 已诚实标注 <300）
+- 词表：读取 `corpus/compliance/words.json`（交付时为 199 词，第二批已补至 **348 词**，severe 119 / high 220 / medium 9，达标 ≥300）
 
 ## 3. 与文档计划的偏差（已写注释 备案）
 

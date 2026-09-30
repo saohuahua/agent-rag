@@ -69,7 +69,7 @@ export default function ChatPage() {
 
       {selected ? (
         <ChatPanel
-          key={selected.id}
+          key={`chat-${selected.id}`}
           session={selected}
           holder={holder}
           employees={employees}
@@ -80,7 +80,7 @@ export default function ChatPage() {
       )}
 
       {selected ? (
-        <Timeline key={selected.id} sessionId={selected.id} employees={employees} onHolderChange={onHolderChange} />
+        <Timeline key={`timeline-${selected.id}`} sessionId={selected.id} employees={employees} onHolderChange={onHolderChange} />
       ) : (
         <div style={{ borderLeft: '1px solid var(--border)' }} />
       )}
